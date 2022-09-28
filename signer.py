@@ -9,6 +9,7 @@ from src.chainratchet import MockChainRatchet
 from src.ddbchainratchet import DDBChainRatchet
 
 from src.signer import MockSigner
+from src.localsigner import LocalSigner
 from src.hsmsigner import HsmSigner
 from src.validatesigner import ValidateSigner
 
@@ -57,6 +58,7 @@ if path.isfile('keys.json'):
 # so that they persist.
 
 signers = {
+    'local'      : LocalSigner,
     'amazon_hsm' : HsmSigner,
     'mockery'    : MockSigner,
 }
