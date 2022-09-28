@@ -8,7 +8,7 @@ from pytezos_core.encoding import base58_encode
 
 from src.sigreq import SignatureReq
 from src.validatesigner import ValidateSigner
-from src.signer import Signer
+from src.signer import MockSigner
 from src.chainratchet import MockChainRatchet
 
 
@@ -99,11 +99,6 @@ valid_sig_reqs = [
         ca60f244ca9a876e76cbad9140980f6c88d0bf900ac6d802"""))
 ]
 
-class MockHsmSigner:
-    def sign(self, handle=None, data=None, mechanism=None):
-        return Signer.b58encode_signature(RAW_SIGNED_BLOCK)
-
-
 class TestRemoteSigner(unittest.TestCase):
     TEST_CONFIG = {
         'keys': {},
@@ -117,8 +112,8 @@ class TestRemoteSigner(unittest.TestCase):
         self.assertEqual(req[1], got.vote)
 
         rs = ValidateSigner(self.TEST_CONFIG,
-                            ratchet=MockChainRatchet(),
-                            subsigner=MockHsmSigner())
+                            ratchet=MockChainRatchet({}),
+                            subsigner=MockSigner(RAW_SIGNED_BLOCK))
         self.assertEqual(rs.sign(7, SignatureReq(req[-1])), SIGNED_BLOCK)
 
         #
@@ -126,15 +121,15 @@ class TestRemoteSigner(unittest.TestCase):
 
         with self.assertRaises(Exception):
             rs = ValidateSigner({ 'keys': {}, 'policy': { 'voting': [] } },
-                                ratchet=MockChainRatchet(),
-                                subsigner=MockHsmSigner())
+                                ratchet=MockChainRatchet({}),
+                                subsigner=MockSigner(RAW_SIGNED_BLOCK))
             rs.sign(7, SignatureReq(req[-1]))
 
     def test_identifies_invalid_block_preamble(self):
         with self.assertRaises(Exception):
             rs = ValidateSigner(self.TEST_CONFIG,
                                 ratchet=MockChainRatchet(0, 0),
-                                hsm=MockHsmSigner())
+                                hsm=MockSigner(RAW_SIGNED_BLOCK))
             rs.sign(7, SignatureReq(INVALID_PREAMBLE))
 
     def test_list_sigreqs(self):
@@ -154,20 +149,20 @@ class TestRemoteSigner(unittest.TestCase):
 
             #
             # Now, let's test mock signing.  Note, we only have one
-            # valid signature in the MockHsmSigner, but we are mainly
+            # valid signature in the MockSigner, but we are mainly
             # testing to ensure that we are denied when we double bake:
 
             rs = ValidateSigner(self.TEST_CONFIG,
                                 ratchet=MockChainRatchet(level=got.level-1,
                                                          round=0),
-                                subsigner=MockHsmSigner())
+                                subsigner=MockSigner(RAW_SIGNED_BLOCK))
             self.assertEqual(rs.sign(7, SignatureReq(req[4])), SIGNED_BLOCK)
 
             if got.round > 0:
                 rs = ValidateSigner(self.TEST_CONFIG,
                                     ratchet=MockChainRatchet(level=got.level,
                                                              round=got.round-1),
-                                    subsigner=MockHsmSigner())
+                                    subsigner=MockSigner(RAW_SIGNED_BLOCK))
                 self.assertEqual(rs.sign(7, SignatureReq(req[4])), SIGNED_BLOCK)
 
             #
@@ -177,7 +172,7 @@ class TestRemoteSigner(unittest.TestCase):
                     rs = ValidateSigner(self.TEST_CONFIG,
                                         ratchet=MockChainRatchet(got.level,
                                                                  got.round),
-                                        subsigner=MockHsmSigner())
+                                        subsigner=MockSigner(RAW_SIGNED_BLOCK))
                     rs.sign(7, SignatureReq(req[4]))
 
 
