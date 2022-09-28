@@ -6,12 +6,13 @@
 
 import logging
 
+from src.signer import Signer
 from src.sigreq import SignatureReq
 
 baking_req_types = ["Baking", "Endorsement", "Preendorsement" ]
 voting_req_types = ["Ballot"]
 
-class ValidateSigner:
+class ValidateSigner(Signer):
     def __init__(self, config, ratchet=None, subsigner=None):
         self.keys = config['keys']
         self.ratchet = ratchet
