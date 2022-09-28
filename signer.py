@@ -6,7 +6,7 @@ from src.sigreq import SignatureReq
 from src.validatesigner import ValidateSigner
 from src.ddbchainratchet import DDBChainRatchet
 from src.hsmsigner import HsmSigner
-from os import path, environ
+from os import path
 import logging
 
 def logreq(sigreq, msg):
@@ -50,7 +50,7 @@ if path.isfile('keys.json'):
 # We keep the ChainRatchet, HSM, and ValidateSigner outside sign()
 # so that they persist.
 
-cr  = DDBChainRatchet(environ['REGION'], environ['DDB_TABLE'])
+cr  = DDBChainRatchet(config)
 hsm = HsmSigner(config)
 rs  = ValidateSigner(config, ratchet=cr, subsigner=hsm)
 
