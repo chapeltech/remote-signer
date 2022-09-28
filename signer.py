@@ -2,10 +2,16 @@
 
 from flask import Flask, request, Response, json, jsonify
 from werkzeug.exceptions import HTTPException
+
 from src.sigreq import SignatureReq
-from src.validatesigner import ValidateSigner
+
+from src.chainratchet import MockChainRatchet
 from src.ddbchainratchet import DDBChainRatchet
+
+from src.signer import MockSigner
 from src.hsmsigner import HsmSigner
+from src.validatesigner import ValidateSigner
+
 from os import path
 import logging
 
@@ -50,9 +56,29 @@ if path.isfile('keys.json'):
 # We keep the ChainRatchet, HSM, and ValidateSigner outside sign()
 # so that they persist.
 
-cr  = DDBChainRatchet(config)
-hsm = HsmSigner(config)
-rs  = ValidateSigner(config, ratchet=cr, subsigner=hsm)
+signers = {
+    'amazon_hsm' : HsmSigner,
+    'mockery'    : MockSigner,
+}
+
+if "signer" not in config:
+    raise(KeyError('config["signer"] not defined'))
+if config["signer"] not in signers:
+    raise(KeyError(f'signer: {config["signer"]} not defined'))
+ss = signers[config["signer"]](config)
+
+ratchets = {
+    'mockery'    : MockChainRatchet,
+    'dynamodb'   : DDBChainRatchet,
+}
+
+if "chain_ratchet" not in config:
+    raise(KeyError('config["chain_ratchet"] not defined'))
+if config["chain_ratchet"] not in ratchets:
+    raise(KeyError(f'chain_ratchet: {config["chain_ratchet"]} not defined'))
+cr = ratchets[config["chain_ratchet"]](config)
+
+rs  = ValidateSigner(config, ratchet=cr, subsigner=ss)
 
 @app.route('/keys/<key_hash>', methods=['GET', 'POST'])
 def sign(key_hash):
