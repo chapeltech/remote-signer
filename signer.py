@@ -64,7 +64,7 @@ def sign(key_hash):
             if request.method == 'POST':
                 sigreq = SignatureReq(request.get_json(force=True))
                 response = jsonify({
-                    'signature': rs.sign(key['private_handle'], sigreq)
+                    'signature': rs.sign(key_hash, sigreq)
                 })
             else:
                 response = jsonify({ 'public_key': key['public_key'] })

@@ -38,9 +38,9 @@ class ValidateSigner(Signer):
         if not allowed:
             raise(Exception('Request is against policy'))
 
-    def sign(self, handle, sigreq):
+    def sign(self, pkh, sigreq):
         logging.debug(f"About to sign {sigreq.get_payload()} " +
-                      f"with key handle {handle}")
+                      f"with key handle {pkh}")
 
         self.check_policy(sigreq)
 
@@ -51,5 +51,5 @@ class ValidateSigner(Signer):
 
             self.ratchet.check(sig_type, level, round)
 
-        return self.subsigner.sign(handle, sigreq)
+        return self.subsigner.sign(pkh, sigreq)
 
