@@ -54,6 +54,8 @@ if path.isfile('keys.json'):
         json_blob = myfile.read().replace('\n', '')
         config = json.loads(json_blob)
         logging.info(f"Loaded config contains: {json.dumps(config, indent=2)}")
+else:
+    raise(Exception("Configuration file 'keys.json' not provided"))
 
 #
 # Now we assume some defaults:
