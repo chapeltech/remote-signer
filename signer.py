@@ -26,10 +26,12 @@ logging.basicConfig(filename='./remote-signer.log',
 
 app = Flask(__name__)
 
-#
 # The config file (keys.json) has a structure:
 #
 # config = {
+#     'debug': False,
+#     'addr': '127.0.0.1',
+#     'port': '5000',
 #     'hsm_username': 'resigner',
 #     'hsm_slot': 1,
 #     'hsm_lib': '/opt/cloudhsm/lib/libcloudhsm_pkcs11.so',
@@ -52,6 +54,19 @@ if path.isfile('keys.json'):
         json_blob = myfile.read().replace('\n', '')
         config = json.loads(json_blob)
         logging.info(f"Loaded config contains: {json.dumps(config, indent=2)}")
+
+#
+# Now we assume some defaults:
+
+defaults = {
+    "addr": "127.0.0.1",
+    "port": 5000,
+    "debug": False
+}
+
+for item in defaults:
+    if item not in config:
+        config[item] = defaults[item]
 
 #
 # We keep the ChainRatchet, HSM, and ValidateSigner outside sign()
@@ -129,4 +144,4 @@ def authorized_keys():
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run(host=config["addr"], port=config["port"], debug=config["debug"])
