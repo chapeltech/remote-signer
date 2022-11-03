@@ -39,7 +39,7 @@ class ValidateSigner(Signer):
             raise(Exception('Request is against policy'))
 
     def sign(self, pkh, sigreq):
-        logging.debug(f"About to sign {sigreq.get_payload()} " +
+        logging.debug(f"About to sign {sigreq.get_hex_payload()} " +
                       f"with key handle {pkh}")
 
         self.check_policy(sigreq)
